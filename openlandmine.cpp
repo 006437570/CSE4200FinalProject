@@ -62,6 +62,24 @@ void countAdjacentMines() {
     }
 }
 
+void revealEmptyCells(int x, int y) {
+    if (x < 0 || y < 0 || x >= BOARD_SIZE || y >= BOARD_SIZE) return;
+    if (board[y][x].state == CellState::Revealed || board[y][x].content == CellContent::Mine) return;
+
+    board[y][x].state = CellState::Revealed;
+
+    if (board[y][x].adjacentMines > 0) return;
+
+    revealEmptyCells(x - 1, y - 1);
+    revealEmptyCells(x, y - 1);
+    revealEmptyCells(x + 1, y - 1);
+    revealEmptyCells(x - 1, y);
+    revealEmptyCells(x + 1, y);
+    revealEmptyCells(x - 1, y + 1);
+    revealEmptyCells(x, y + 1);
+    revealEmptyCells(x + 1, y + 1);
+}
+
 void init() {
     glClearColor(1.0, 1.0, 1.0, 0.0);
     generateMines(10);
@@ -129,23 +147,7 @@ void mouse(int button, int state, int x, int y) {
                 cout << "Game over!" << endl;
                 exit(0);
             } else {
-                board[cellY][cellX].state = CellState::Revealed;
-                // Check for win condition
-                bool win = true;
-                for (int y = 0; y < BOARD_SIZE; y++) {
-                    for (int x = 0; x < BOARD_SIZE; x++) {
-                        if (board[y][x].content != CellContent::Mine &&
-                            board[y][x].state != CellState::Revealed) {
-                            win = false;
-                            break;
-                        }
-                    }
-                    if (!win) break;
-                }
-                if (win) {
-                    cout << "You win!" << endl;
-                    exit(0);
-                }
+                revealEmptyCells(cellX, cellY);
             }
         }
     } else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
