@@ -10,12 +10,21 @@ const int WINDOW_HEIGHT = 400;
 const int BOARD_SIZE = 10;
 const int CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE;
 
+
+// Variables for color themes
+float hiddenGrid[3] = {0.5, 0.5, 0.5}; //Grids that haven't been revealed yet (default gray)
+float markedGrid[3] = {1.0, 0.0, 0.0}; //Grid that has been flagged by player (default red)
+float bombGrid[3] = {0.0, 0.0, 0.0}; //Grid that has a bomb on it (default black)
+float revealedGrid[3] = {0.8, 0.8, 0.8}; //Grid that has been revealed by the player (default light gray)
+
+// The 3 different states that any grid cell can be in
 enum class CellState {
     Hidden,
     Revealed,
     Marked
 };
 
+// A cell can either be empty or have a mine
 enum class CellContent {
     Empty,
     Mine
@@ -110,14 +119,18 @@ void drawBoard() {
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             if (board[y][x].state == CellState::Hidden) {
-                glColor3f(0.5, 0.5, 0.5); // Gray
+                //glColor3f(0.5, 0.5, 0.5); // Gray
+                glColor3f(hiddenGrid[0], hiddenGrid[1], hiddenGrid[2]);
             } else if (board[y][x].state == CellState::Marked) {
-                glColor3f(1.0, 0.0, 0.0); // Red
+                //glColor3f(1.0, 0.0, 0.0); // Red
+                glColor3f(markedGrid[0],markedGrid[1],markedGrid[2]);
             } else {
                 if (board[y][x].content == CellContent::Mine) {
-                    glColor3f(0.0, 0.0, 0.0); // Black
+                    //glColor3f(0.0, 0.0, 0.0); // Black
+                    glColor3f(bombGrid[0],bombGrid[1],bombGrid[2]);
                 } else {
-                    glColor3f(0.8, 0.8, 0.8); // Light gray
+                    //glColor3f(0.8, 0.8, 0.8); // Light gray
+                    glColor3f(revealedGrid[0],revealedGrid[1],revealedGrid[2]);
                 }
             }
             drawCell(x * CELL_SIZE, y * CELL_SIZE);
@@ -175,14 +188,26 @@ void reshape(int w, int h) {
     glLoadIdentity();
 }
 
+// For keyboard functions
+void keyboard(unsigned char key, int x, int y)
+{
+    switch (key)
+    {
+        //closes program
+        case 27: //escape key
+            exit(-1);
+    }
+}
+
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-    glutCreateWindow("Minesweeper");
+    glutCreateWindow("Open Landmine");
     init();
     glutDisplayFunc(display);
     glutMouseFunc(mouse);
+    glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshape);
     glutMainLoop();
     return 0;
