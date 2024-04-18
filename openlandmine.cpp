@@ -5,8 +5,9 @@
 
 using namespace std;
 
-const int WINDOW_WIDTH = 400;
-const int WINDOW_HEIGHT = 400;
+const int WINDOW_WIDTH = 600;
+const int WINDOW_HEIGHT = 750;
+const int GUI_HEIGHT = WINDOW_HEIGHT - WINDOW_WIDTH; //set height that will be for the GUI
 const int BOARD_SIZE = 10;
 const int CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE;
 
@@ -16,6 +17,7 @@ float hiddenGrid[3] = {0.5, 0.5, 0.5}; //Grids that haven't been revealed yet (d
 float markedGrid[3] = {1.0, 0.0, 0.0}; //Grid that has been flagged by player (default red)
 float bombGrid[3] = {0.0, 0.0, 0.0}; //Grid that has a bomb on it (default black)
 float revealedGrid[3] = {0.8, 0.8, 0.8}; //Grid that has been revealed by the player (default light gray)
+float gridBorder[3] = {1.0, 1.0, 1.0}; //Outline color of all the grids (default white)
 
 // The 3 different states that any grid cell can be in
 enum class CellState {
@@ -97,25 +99,15 @@ void init() {
 
 void drawCell(int x, int y) {
     glBegin(GL_QUADS);
-    glVertex2f(x, y);
-    glVertex2f(x + CELL_SIZE, y);
-    glVertex2f(x + CELL_SIZE, y + CELL_SIZE);
-    glVertex2f(x, y + CELL_SIZE);
+        glVertex2f(x, y);
+        glVertex2f(x + CELL_SIZE, y);
+        glVertex2f(x + CELL_SIZE, y + CELL_SIZE);
+        glVertex2f(x, y + CELL_SIZE);
     glEnd();
 }
 
 void drawBoard() {
-    glColor3f(0.0, 0.0, 0.0); // Set line color to black
-    glLineWidth(1.0); // Set line width to 1 pixel
-    glBegin(GL_LINES);
-    for (int i = 1; i < BOARD_SIZE; ++i) {
-        glVertex2f(i * CELL_SIZE, 0);
-        glVertex2f(i * CELL_SIZE, WINDOW_HEIGHT);
-        glVertex2f(0, i * CELL_SIZE);
-        glVertex2f(WINDOW_WIDTH, i * CELL_SIZE);
-    }
-    glEnd();
-
+    //Draw cells
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             if (board[y][x].state == CellState::Hidden) {
@@ -133,7 +125,7 @@ void drawBoard() {
                     glColor3f(revealedGrid[0],revealedGrid[1],revealedGrid[2]);
                 }
             }
-            drawCell(x * CELL_SIZE, y * CELL_SIZE);
+            drawCell(x * CELL_SIZE, (y * CELL_SIZE) + GUI_HEIGHT);
 
             if (board[y][x].state == CellState::Revealed && board[y][x].content != CellContent::Mine &&
                 board[y][x].adjacentMines > 0) {
@@ -143,6 +135,22 @@ void drawBoard() {
             }
         }
     }
+
+    //Draw the grid lines
+    glColor3f(gridBorder[0], gridBorder[1], gridBorder[2]);
+    glLineWidth(2.0); // Set line width to 1 pixel
+
+    glBegin(GL_LINES);
+        for (int i = 0; i < (BOARD_SIZE + 1); ++i) {
+            //Vertical Lines
+            glVertex2f(i * CELL_SIZE, GUI_HEIGHT);
+            glVertex2f(i * CELL_SIZE, WINDOW_HEIGHT);
+            //Horizontal Lines
+            glVertex2f(0, GUI_HEIGHT + (i * CELL_SIZE) );
+            glVertex2f(WINDOW_WIDTH, GUI_HEIGHT + (i * CELL_SIZE) );
+        }
+    glEnd();
+
 }
 
 void display() {
@@ -155,6 +163,7 @@ void mouse(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
         int cellX = x / CELL_SIZE;
         int cellY = y / CELL_SIZE;
+        //cout << x << ", " << y;
         if (board[cellY][cellX].state == CellState::Hidden) {
             if (board[cellY][cellX].content == CellContent::Mine) {
                 cout << "Game over!" << endl;
