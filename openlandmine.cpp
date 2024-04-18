@@ -11,7 +11,6 @@ const int GUI_HEIGHT = WINDOW_HEIGHT - WINDOW_WIDTH; //set height that will be f
 const int BOARD_SIZE = 10;
 const int CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE;
 
-
 // Variables for color themes
 float hiddenGrid[3] = {0.5, 0.5, 0.5}; //Grids that haven't been revealed yet (default gray)
 float markedGrid[3] = {1.0, 0.0, 0.0}; //Grid that has been flagged by player (default red)
@@ -99,43 +98,52 @@ void init() {
 
 void drawCell(int x, int y) {
     glBegin(GL_QUADS);
-        glVertex2f(x, y);
-        glVertex2f(x + CELL_SIZE, y);
-        glVertex2f(x + CELL_SIZE, y + CELL_SIZE);
-        glVertex2f(x, y + CELL_SIZE);
+    glVertex2f(x, y);
+    glVertex2f(x + CELL_SIZE, y);
+    glVertex2f(x + CELL_SIZE, y + CELL_SIZE);
+    glVertex2f(x, y + CELL_SIZE);
     glEnd();
 }
 
 void drawBoard() {
-    //Draw cells
+    // Draw the grid lines
+    glColor3f(0.0, 0.0, 0.0); // Set line color to black
+    glLineWidth(2.0); // Set line width to 2 pixels
+
+    glBegin(GL_LINES);
+    for (int i = 0; i < (BOARD_SIZE + 1); ++i) {
+        // Vertical Lines
+        glVertex2f(i * CELL_SIZE, GUI_HEIGHT);
+        glVertex2f(i * CELL_SIZE, WINDOW_HEIGHT);
+        // Horizontal Lines
+        glVertex2f(0, GUI_HEIGHT + (i * CELL_SIZE));
+        glVertex2f(WINDOW_WIDTH, GUI_HEIGHT + (i * CELL_SIZE));
+    }
+    glEnd();
+
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             if (board[y][x].state == CellState::Hidden) {
-                //glColor3f(0.5, 0.5, 0.5); // Gray
-                glColor3f(hiddenGrid[0], hiddenGrid[1], hiddenGrid[2]);
+                glColor3f(0.5, 0.5, 0.5); // Gray
             } else if (board[y][x].state == CellState::Marked) {
-                //glColor3f(1.0, 0.0, 0.0); // Red
-                glColor3f(markedGrid[0],markedGrid[1],markedGrid[2]);
+                glColor3f(1.0, 0.0, 0.0); // Red
             } else {
                 if (board[y][x].content == CellContent::Mine) {
-                    //glColor3f(0.0, 0.0, 0.0); // Black
-                    glColor3f(bombGrid[0],bombGrid[1],bombGrid[2]);
+                    glColor3f(0.0, 0.0, 0.0); // Black
                 } else {
-                    //glColor3f(0.8, 0.8, 0.8); // Light gray
-                    glColor3f(revealedGrid[0],revealedGrid[1],revealedGrid[2]);
+                    glColor3f(0.8, 0.8, 0.8); // Light gray
                 }
             }
-            drawCell(x * CELL_SIZE, (y * CELL_SIZE) + GUI_HEIGHT);
+            drawCell(x * CELL_SIZE, GUI_HEIGHT + y * CELL_SIZE);
 
             if (board[y][x].state == CellState::Revealed && board[y][x].content != CellContent::Mine &&
                 board[y][x].adjacentMines > 0) {
                 glColor3f(0.0, 0.0, 0.0); // Black
-                glRasterPos2i(x * CELL_SIZE + CELL_SIZE / 3, y * CELL_SIZE + CELL_SIZE / 1.5);
+                glRasterPos2i(x * CELL_SIZE + CELL_SIZE / 3, GUI_HEIGHT + y * CELL_SIZE + CELL_SIZE / 1.5);
                 glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '0' + board[y][x].adjacentMines);
             }
         }
     }
-
     //Draw the grid lines
     glColor3f(gridBorder[0], gridBorder[1], gridBorder[2]);
     glLineWidth(2.0); // Set line width to 1 pixel
@@ -150,7 +158,6 @@ void drawBoard() {
             glVertex2f(WINDOW_WIDTH, GUI_HEIGHT + (i * CELL_SIZE) );
         }
     glEnd();
-
 }
 
 void display() {
@@ -162,8 +169,7 @@ void display() {
 void mouse(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
         int cellX = x / CELL_SIZE;
-        int cellY = y / CELL_SIZE;
-        //cout << x << ", " << y;
+        int cellY = (y - GUI_HEIGHT) / CELL_SIZE;
         if (board[cellY][cellX].state == CellState::Hidden) {
             if (board[cellY][cellX].content == CellContent::Mine) {
                 cout << "Game over!" << endl;
@@ -174,7 +180,7 @@ void mouse(int button, int state, int x, int y) {
         }
     } else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
         int cellX = x / CELL_SIZE;
-        int cellY = y / CELL_SIZE;
+        int cellY = (y - GUI_HEIGHT) / CELL_SIZE;
         if (board[cellY][cellX].state == CellState::Hidden) {
             if (minesRemaining > 0) {
                 board[cellY][cellX].state = CellState::Marked;
