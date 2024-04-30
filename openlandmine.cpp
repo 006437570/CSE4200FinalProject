@@ -18,26 +18,18 @@ float bombGrid[3] = {0.0, 0.0, 0.0}; //Grid that has a bomb on it (default black
 float revealedGrid[3] = {0.8, 0.8, 0.8}; //Grid that has been revealed by the player (default light gray)
 float gridBorder[3] = {1.0, 1.0, 1.0}; //Outline color of all the grids (default white)
 
-// The 3 different states that any grid cell can be in
-enum class CellState {
-    Hidden,
-    Revealed,
-    Marked
-};
+// Cell states
+const int HIDDEN = 0;
+const int REVEALED = 1;
+const int MARKED = 2;
 
-// A cell can either be empty or have a mine
-enum class CellContent {
-    Empty,
-    Mine
-};
+// Cell contents
+const int EMPTY = 0;
+const int MINE = 1;
 
-struct Cell {
-    CellState state = CellState::Hidden;
-    CellContent content = CellContent::Empty;
-    int adjacentMines = 0;
-};
-
-vector<vector<Cell>> board(BOARD_SIZE, vector<Cell>(BOARD_SIZE));
+vector<vector<int>> cellState(BOARD_SIZE, vector<int>(BOARD_SIZE, HIDDEN));
+vector<vector<int>> cellContent(BOARD_SIZE, vector<int>(BOARD_SIZE, EMPTY));
+vector<vector<int>> adjacentMines(BOARD_SIZE, vector<int>(BOARD_SIZE, 0));
 
 int minesRemaining = 10;
 
@@ -47,8 +39,8 @@ void generateMines(int numMines) {
     while (minesPlaced < numMines) {
         int x = rand() % BOARD_SIZE;
         int y = rand() % BOARD_SIZE;
-        if (board[y][x].content != CellContent::Mine) {
-            board[y][x].content = CellContent::Mine;
+        if (cellContent[y][x] != MINE) {
+            cellContent[y][x] = MINE;
             minesPlaced++;
         }
     }
@@ -57,14 +49,14 @@ void generateMines(int numMines) {
 void countAdjacentMines() {
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
-            if (board[y][x].content == CellContent::Mine) continue;
+            if (cellContent[y][x] == MINE) continue;
             for (int dy = -1; dy <= 1; dy++) {
                 for (int dx = -1; dx <= 1; dx++) {
                     int nx = x + dx;
                     int ny = y + dy;
                     if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE &&
-                        board[ny][nx].content == CellContent::Mine) {
-                        board[y][x].adjacentMines++;
+                        cellContent[ny][nx] == MINE) {
+                        adjacentMines[y][x]++;
                     }
                 }
             }
@@ -74,11 +66,11 @@ void countAdjacentMines() {
 
 void revealEmptyCells(int x, int y) {
     if (x < 0 || y < 0 || x >= BOARD_SIZE || y >= BOARD_SIZE) return;
-    if (board[y][x].state == CellState::Revealed || board[y][x].content == CellContent::Mine) return;
+    if (cellState[y][x] == REVEALED || cellContent[y][x] == MINE) return;
 
-    board[y][x].state = CellState::Revealed;
+    cellState[y][x] = REVEALED;
 
-    if (board[y][x].adjacentMines > 0) return;
+    if (adjacentMines[y][x] > 0) return;
 
     revealEmptyCells(x - 1, y - 1);
     revealEmptyCells(x, y - 1);
@@ -123,24 +115,24 @@ void drawBoard() {
 
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
-            if (board[y][x].state == CellState::Hidden) {
-                glColor3f(0.5, 0.5, 0.5); // Gray
-            } else if (board[y][x].state == CellState::Marked) {
-                glColor3f(1.0, 0.0, 0.0); // Red
+            if (cellState[y][x] == HIDDEN) {
+                glColor3fv(hiddenGrid); // Gray
+            } else if (cellState[y][x] == MARKED) {
+                glColor3fv(markedGrid); // Red
             } else {
-                if (board[y][x].content == CellContent::Mine) {
-                    glColor3f(0.0, 0.0, 0.0); // Black
+                if (cellContent[y][x] == MINE) {
+                    glColor3fv(bombGrid); // Black
                 } else {
-                    glColor3f(0.8, 0.8, 0.8); // Light gray
+                    glColor3fv(revealedGrid); // Light gray
                 }
             }
             drawCell(x * CELL_SIZE, GUI_HEIGHT + y * CELL_SIZE);
 
-            if (board[y][x].state == CellState::Revealed && board[y][x].content != CellContent::Mine &&
-                board[y][x].adjacentMines > 0) {
+            if (cellState[y][x] == REVEALED && cellContent[y][x] != MINE &&
+                adjacentMines[y][x] > 0) {
                 glColor3f(0.0, 0.0, 0.0); // Black
                 glRasterPos2i(x * CELL_SIZE + CELL_SIZE / 3, GUI_HEIGHT + y * CELL_SIZE + CELL_SIZE / 1.5);
-                glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '0' + board[y][x].adjacentMines);
+                glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '0' + adjacentMines[y][x]);
             }
         }
     }
@@ -170,8 +162,8 @@ void mouse(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
         int cellX = x / CELL_SIZE;
         int cellY = (y - GUI_HEIGHT) / CELL_SIZE;
-        if (board[cellY][cellX].state == CellState::Hidden) {
-            if (board[cellY][cellX].content == CellContent::Mine) {
+        if (cellState[cellY][cellX] == HIDDEN) {
+            if (cellContent[cellY][cellX] == MINE) {
                 cout << "Game over!" << endl;
                 exit(0);
             } else {
@@ -181,13 +173,13 @@ void mouse(int button, int state, int x, int y) {
     } else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
         int cellX = x / CELL_SIZE;
         int cellY = (y - GUI_HEIGHT) / CELL_SIZE;
-        if (board[cellY][cellX].state == CellState::Hidden) {
+        if (cellState[cellY][cellX] == HIDDEN) {
             if (minesRemaining > 0) {
-                board[cellY][cellX].state = CellState::Marked;
+                cellState[cellY][cellX] = MARKED;
                 minesRemaining--;
             }
-        } else if (board[cellY][cellX].state == CellState::Marked) {
-            board[cellY][cellX].state = CellState::Hidden;
+        } else if (cellState[cellY][cellX] == MARKED) {
+            cellState[cellY][cellX] = HIDDEN;
             minesRemaining++;
         }
     }
