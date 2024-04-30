@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+#include <iomanip>
 
 using namespace std;
 
@@ -32,6 +33,7 @@ vector<vector<int>> cellContent(BOARD_SIZE, vector<int>(BOARD_SIZE, EMPTY));
 vector<vector<int>> adjacentMines(BOARD_SIZE, vector<int>(BOARD_SIZE, 0));
 
 int minesRemaining = 10;
+time_t startTime;
 
 void generateMines(int numMines) {
     srand(time(nullptr));
@@ -86,6 +88,7 @@ void init() {
     glClearColor(1.0, 1.0, 1.0, 0.0);
     generateMines(10);
     countAdjacentMines();
+    startTime = time(nullptr);
 }
 
 void drawCell(int x, int y) {
@@ -155,7 +158,33 @@ void drawBoard() {
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     drawBoard();
+
+    // Display game timer
+    time_t currentTime = time(nullptr);
+    int elapsedTime = difftime(currentTime, startTime);
+    int minutes = elapsedTime / 60;
+    int seconds = elapsedTime % 60;
+    string timerDisplay = "Time: " + to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + to_string(seconds);
+    glColor3f(0.0, 0.0, 0.0);
+    glRasterPos2i(10, 30);
+    for (char c : timerDisplay) {
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
+    }
+
     glutSwapBuffers();
+
+    // Trigger window refresh every second
+    glutPostRedisplay();
+}
+
+void gameOver() {
+    time_t currentTime = time(nullptr);
+    int elapsedTime = difftime(currentTime, startTime);
+    int minutes = elapsedTime / 60;
+    int seconds = elapsedTime % 60;
+    cout << "Game Over!" << endl;
+    cout << "Time elapsed: " << minutes << " minutes and " << seconds << " seconds." << endl;
+    exit(0);
 }
 
 void mouse(int button, int state, int x, int y) {
@@ -164,8 +193,7 @@ void mouse(int button, int state, int x, int y) {
         int cellY = (y - GUI_HEIGHT) / CELL_SIZE;
         if (cellState[cellY][cellX] == HIDDEN) {
             if (cellContent[cellY][cellX] == MINE) {
-                cout << "Game over!" << endl;
-                exit(0);
+                gameOver();
             } else {
                 revealEmptyCells(cellX, cellY);
             }
