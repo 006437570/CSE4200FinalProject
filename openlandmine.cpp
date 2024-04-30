@@ -188,9 +188,12 @@ void gameOver() {
 }
 
 void mouse(int button, int state, int x, int y) {
+    if (x < 0 || y < GUI_HEIGHT || x >= WINDOW_WIDTH || y >= WINDOW_HEIGHT) return; // Click outside the game board area
+
+    int cellX = x / CELL_SIZE;
+    int cellY = (y - GUI_HEIGHT) / CELL_SIZE;
+
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-        int cellX = x / CELL_SIZE;
-        int cellY = (y - GUI_HEIGHT) / CELL_SIZE;
         if (cellState[cellY][cellX] == HIDDEN) {
             if (cellContent[cellY][cellX] == MINE) {
                 gameOver();
@@ -199,8 +202,6 @@ void mouse(int button, int state, int x, int y) {
             }
         }
     } else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-        int cellX = x / CELL_SIZE;
-        int cellY = (y - GUI_HEIGHT) / CELL_SIZE;
         if (cellState[cellY][cellX] == HIDDEN) {
             if (minesRemaining > 0) {
                 cellState[cellY][cellX] = MARKED;
@@ -211,7 +212,6 @@ void mouse(int button, int state, int x, int y) {
             minesRemaining++;
         }
     }
-    glutPostRedisplay();
 }
 
 void reshape(int w, int h) {
