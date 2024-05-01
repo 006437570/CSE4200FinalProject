@@ -222,6 +222,15 @@ void gameOver() {
     cout << "Game Over!" << endl;
     cout << "Time elapsed: " << minutes << " minutes and " << seconds << " seconds." << endl;
     gameOverFlag = true; // Set game over flag
+
+    // Reveal all the mines
+    for (int y = 0; y < BOARD_SIZE; ++y) {
+        for (int x = 0; x < BOARD_SIZE; ++x) {
+            if (cellContent[y][x] == MINE) {
+                cellState[y][x] = REVEALED;
+            }
+        }
+    }
 }
 
 void mouse(int button, int state, int x, int y) {
