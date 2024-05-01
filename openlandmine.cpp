@@ -171,6 +171,14 @@ void display() {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
     }
 
+
+    // Display flags remaining
+    string flagDisplay = "Flags: " + to_string(minesRemaining);
+    glRasterPos2i(WINDOW_WIDTH - 120, 30);
+    for (char c : flagDisplay) {
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
+    }
+
     glutSwapBuffers();
 
     // Trigger window refresh every second
