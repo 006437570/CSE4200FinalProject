@@ -32,6 +32,8 @@ vector<vector<int>> cellState(BOARD_SIZE, vector<int>(BOARD_SIZE, HIDDEN));
 vector<vector<int>> cellContent(BOARD_SIZE, vector<int>(BOARD_SIZE, EMPTY));
 vector<vector<int>> adjacentMines(BOARD_SIZE, vector<int>(BOARD_SIZE, 0));
 
+bool gameOverFlag = false;
+
 int minesRemaining = 10;
 time_t startTime;
 
@@ -155,22 +157,37 @@ void drawBoard() {
     glEnd();
 }
 
+
+
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     drawBoard();
 
-    // Display game timer
-    time_t currentTime = time(nullptr);
-    int elapsedTime = difftime(currentTime, startTime);
-    int minutes = elapsedTime / 60;
-    int seconds = elapsedTime % 60;
-    string timerDisplay = "Time: " + to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + to_string(seconds);
-    glColor3f(0.0, 0.0, 0.0);
-    glRasterPos2i(10, 30);
+    // Display game timer or "Game Over" message
+    string timerDisplay;
+    if (gameOverFlag) {
+        timerDisplay = "Game Over!";
+        glColor3f(1.0, 0.0, 0.0); // Red color for game over message
+    } else {
+        // Display game timer if the timer is running
+        time_t currentTime = time(nullptr);
+        int elapsedTime = difftime(currentTime, startTime);
+        int minutes = elapsedTime / 60;
+        int seconds = elapsedTime % 60;
+        timerDisplay = "Time: " + to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + to_string(seconds);
+        glColor3f(0.0, 0.0, 0.0);
+    }
+    glRasterPos2i(10, 30); // Center the text horizontally
     for (char c : timerDisplay) {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
     }
 
+    // Display reset button
+    string resetDisplay = "Reset";
+    glRasterPos2i(WINDOW_WIDTH / 2 - 20, 30);
+    for (char c : resetDisplay) {
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
+    }
 
     // Display flags remaining
     string flagDisplay = "Flags: " + to_string(minesRemaining);
@@ -185,6 +202,18 @@ void display() {
     glutPostRedisplay();
 }
 
+void resetGame() {
+    // Reset game variables
+    minesRemaining = 10;
+    startTime = time(nullptr);
+    cellState.assign(BOARD_SIZE, vector<int>(BOARD_SIZE, HIDDEN));
+    cellContent.assign(BOARD_SIZE, vector<int>(BOARD_SIZE, EMPTY));
+    adjacentMines.assign(BOARD_SIZE, vector<int>(BOARD_SIZE, 0));
+    generateMines(10);
+    countAdjacentMines();
+    gameOverFlag = false; // Reset game over flag
+}
+
 void gameOver() {
     time_t currentTime = time(nullptr);
     int elapsedTime = difftime(currentTime, startTime);
@@ -192,12 +221,21 @@ void gameOver() {
     int seconds = elapsedTime % 60;
     cout << "Game Over!" << endl;
     cout << "Time elapsed: " << minutes << " minutes and " << seconds << " seconds." << endl;
-    exit(0);
+    gameOverFlag = true; // Set game over flag
 }
 
 void mouse(int button, int state, int x, int y) {
-    if (x < 0 || y < GUI_HEIGHT || x >= WINDOW_WIDTH || y >= WINDOW_HEIGHT) return; // Click outside the game board area
 
+    if (gameOverFlag) {
+        if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+            if (x >= WINDOW_WIDTH / 2 - 20 && x <= WINDOW_WIDTH / 2 + 20 && y >= 10 && y <= 30) {
+                resetGame(); // Reset game if reset button is clicked
+            }
+        }
+        return;
+    }
+
+    if (x < 0 || y < GUI_HEIGHT || x >= WINDOW_WIDTH || y >= WINDOW_HEIGHT) return; // Click outside the game board area
     int cellX = x / CELL_SIZE;
     int cellY = (y - GUI_HEIGHT) / CELL_SIZE;
 
