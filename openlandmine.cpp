@@ -6,12 +6,13 @@
 
 using namespace std;
 
+// Width and Height of game window
 const int WINDOW_WIDTH = 600;
 const int WINDOW_HEIGHT = 750;
 const int GUI_HEIGHT = WINDOW_HEIGHT - WINDOW_WIDTH; // set height that will be for the GUI
-int BOARD_SIZE = 10;
-int CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE;
-int MINES_COUNT = 10;
+int BOARD_SIZE = 10; // Initial size of the game board
+int CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE; // Size of each cell on the game board
+int MINES_COUNT = 10; // Initial number of miens on the game board
 
 // Variables for color themes
 float hiddenGrid[3] = {0.5, 0.5, 0.5};    // Grids that haven't been revealed yet (default gray)
@@ -21,21 +22,25 @@ float revealedGrid[3] = {0.8, 0.8, 0.8};  // Grid that has been revealed by the 
 float gridBorder[3] = {1.0, 1.0, 1.0};    // Outline color of all the grids (default white)
 
 // Cell states
-const int HIDDEN = 0;
-const int REVEALED = 1;
-const int MARKED = 2;
+const int HIDDEN = 0; // Cell is hidden
+const int REVEALED = 1; // Cell is revealed
+const int MARKED = 2; // Cell is marked by a player
 
 // Cell contents
-const int EMPTY = 0;
-const int MINE = 1;
+const int EMPTY = 0; // Cell is empty
+const int MINE = 1; // Cell contains a mine
 
 vector<vector<int>> cellState(BOARD_SIZE, vector<int>(BOARD_SIZE, HIDDEN));
 vector<vector<int>> cellContent(BOARD_SIZE, vector<int>(BOARD_SIZE, EMPTY));
 vector<vector<int>> adjacentMines(BOARD_SIZE, vector<int>(BOARD_SIZE, 0));
 
+// Number of mines remaining
 int minesRemaining = MINES_COUNT;
+
+// Time when the game starts
 time_t startTime;
 
+// Flags indicating whether the game is over or if the win condition is met
 bool gameOverFlag = false;
 bool winConditionMet = false;
 
@@ -243,6 +248,7 @@ void resetGame() {
     startTime = time(nullptr);
 }
 
+// Function to handle agme over condition
 void gameOver() {
     time_t currentTime = time(nullptr);
     int elapsedTime = difftime(currentTime, startTime);
@@ -310,6 +316,7 @@ void reshape(int w, int h) {
     glLoadIdentity();
 }
 
+// Function to handle mouse events
 void mouse(int button, int state, int x, int y) {
 
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
@@ -343,16 +350,17 @@ void mouse(int button, int state, int x, int y) {
     }
 }
 
+// Main Function
 int main(int argc, char **argv) {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-    glutCreateWindow("Open Landmine");
-    init();
-    glutDisplayFunc(display);
-    glutMouseFunc(mouse);
-    glutKeyboardFunc(keyboard);
-    glutReshapeFunc(reshape);
-    glutMainLoop();
+    glutInit(&argc, argv); // Initialize GLUT
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); // Set display mode
+    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT); // Set window size
+    glutCreateWindow("Open-Landmine");
+    init(); // Initialize the game
+    glutDisplayFunc(display); // Register display callback function
+    glutMouseFunc(mouse); // Register mouse callback function
+    glutKeyboardFunc(keyboard); // Register keyboard callback function
+    glutReshapeFunc(reshape); // Register reshape callback function
+    glutMainLoop(); // Enter the GLUT event processing loop
     return 0;
 }
