@@ -33,33 +33,43 @@ vector<vector<int>> cellContent(BOARD_SIZE, vector<int>(BOARD_SIZE, EMPTY));
 vector<vector<int>> adjacentMines(BOARD_SIZE, vector<int>(BOARD_SIZE, 0));
 
 bool gameOverFlag = false;
+bool winConditionMet = false;
 
 int minesRemaining = 10;
 time_t startTime;
 
-void generateMines(int numMines) {
+void generateMines(int numMines) 
+{
     srand(time(nullptr));
     int minesPlaced = 0;
-    while (minesPlaced < numMines) {
+    while (minesPlaced < numMines) 
+    {
         int x = rand() % BOARD_SIZE;
         int y = rand() % BOARD_SIZE;
-        if (cellContent[y][x] != MINE) {
+        if (cellContent[y][x] != MINE) 
+	{
             cellContent[y][x] = MINE;
             minesPlaced++;
         }
     }
 }
 
-void countAdjacentMines() {
-    for (int y = 0; y < BOARD_SIZE; y++) {
-        for (int x = 0; x < BOARD_SIZE; x++) {
+void countAdjacentMines() 
+{
+    for (int y = 0; y < BOARD_SIZE; y++) 
+    {
+        for (int x = 0; x < BOARD_SIZE; x++) 
+	{
             if (cellContent[y][x] == MINE) continue;
-            for (int dy = -1; dy <= 1; dy++) {
-                for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) 
+	    {
+                for (int dx = -1; dx <= 1; dx++) 
+		{
                     int nx = x + dx;
                     int ny = y + dy;
                     if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE &&
-                        cellContent[ny][nx] == MINE) {
+                        cellContent[ny][nx] == MINE) 
+		    {
                         adjacentMines[y][x]++;
                     }
                 }
@@ -68,7 +78,8 @@ void countAdjacentMines() {
     }
 }
 
-void revealEmptyCells(int x, int y) {
+void revealEmptyCells(int x, int y) 
+{
     if (x < 0 || y < 0 || x >= BOARD_SIZE || y >= BOARD_SIZE) return;
     if (cellState[y][x] == REVEALED || cellContent[y][x] == MINE) return;
 
@@ -86,14 +97,16 @@ void revealEmptyCells(int x, int y) {
     revealEmptyCells(x + 1, y + 1);
 }
 
-void init() {
+void init() 
+{
     glClearColor(1.0, 1.0, 1.0, 0.0);
     generateMines(10);
     countAdjacentMines();
     startTime = time(nullptr);
 }
 
-void drawCell(int x, int y) {
+void drawCell(int x, int y) 
+{
     glBegin(GL_QUADS);
     glVertex2f(x, y);
     glVertex2f(x + CELL_SIZE, y);
@@ -108,7 +121,8 @@ void drawBoard() {
     glLineWidth(2.0); // Set line width to 2 pixels
 
     glBegin(GL_LINES);
-    for (int i = 0; i < (BOARD_SIZE + 1); ++i) {
+    for (int i = 0; i < (BOARD_SIZE + 1); ++i) 
+    {
         // Vertical Lines
         glVertex2f(i * CELL_SIZE, GUI_HEIGHT);
         glVertex2f(i * CELL_SIZE, WINDOW_HEIGHT);
@@ -118,23 +132,34 @@ void drawBoard() {
     }
     glEnd();
 
-    for (int y = 0; y < BOARD_SIZE; y++) {
-        for (int x = 0; x < BOARD_SIZE; x++) {
-            if (cellState[y][x] == HIDDEN) {
+    for (int y = 0; y < BOARD_SIZE; y++) 
+    {
+        for (int x = 0; x < BOARD_SIZE; x++) 
+	{
+            if (cellState[y][x] == HIDDEN) 
+	    {
                 glColor3fv(hiddenGrid); // Gray
-            } else if (cellState[y][x] == MARKED) {
+            } 
+	    else if (cellState[y][x] == MARKED) 
+	    {
                 glColor3fv(markedGrid); // Red
-            } else {
-                if (cellContent[y][x] == MINE) {
+            } 
+	    else
+	    {
+                if (cellContent[y][x] == MINE) 
+		{
                     glColor3fv(bombGrid); // Black
-                } else {
+                } 
+		else 
+		{
                     glColor3fv(revealedGrid); // Light gray
                 }
             }
             drawCell(x * CELL_SIZE, GUI_HEIGHT + y * CELL_SIZE);
 
             if (cellState[y][x] == REVEALED && cellContent[y][x] != MINE &&
-                adjacentMines[y][x] > 0) {
+                adjacentMines[y][x] > 0) 
+	    {
                 glColor3f(0.0, 0.0, 0.0); // Black
                 glRasterPos2i(x * CELL_SIZE + CELL_SIZE / 3, GUI_HEIGHT + y * CELL_SIZE + CELL_SIZE / 1.5);
                 glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '0' + adjacentMines[y][x]);
@@ -146,7 +171,8 @@ void drawBoard() {
     glLineWidth(2.0); // Set line width to 1 pixel
 
     glBegin(GL_LINES);
-        for (int i = 0; i < (BOARD_SIZE + 1); ++i) {
+        for (int i = 0; i < (BOARD_SIZE + 1); ++i) 
+	{
             //Vertical Lines
             glVertex2f(i * CELL_SIZE, GUI_HEIGHT);
             glVertex2f(i * CELL_SIZE, WINDOW_HEIGHT);
@@ -163,36 +189,72 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     drawBoard();
 
+    // Check win condition
+    winConditionMet = true;
+    for (int y = 0; y < BOARD_SIZE; ++y) {
+        for (int x = 0; x < BOARD_SIZE; ++x) 
+	{
+            if (cellState[y][x] == HIDDEN && cellContent[y][x] == MINE) 
+	    {
+                winConditionMet = false;
+                break;
+            }
+            if (cellState[y][x] == MARKED && cellContent[y][x] != MINE) 
+	    {
+                winConditionMet = false;
+                break;
+            }
+        }
+        if (!winConditionMet) 
+	{
+            break;
+        }
+    }
+
     // Display game timer or "Game Over" message
-    string timerDisplay;
-    if (gameOverFlag) {
-        timerDisplay = "Game Over!";
+    string statusDisplay;
+    if (gameOverFlag) 
+    {
+        statusDisplay = "Game Over!";
         glColor3f(1.0, 0.0, 0.0); // Red color for game over message
-    } else {
+    }
+    else if (winConditionMet) 
+    {
+        statusDisplay = "Winner!";
+        glColor3f(0.0, 1.0, 0.0); // Green color for winner message
+    }	
+    else 
+    {
         // Display game timer if the timer is running
         time_t currentTime = time(nullptr);
         int elapsedTime = difftime(currentTime, startTime);
         int minutes = elapsedTime / 60;
         int seconds = elapsedTime % 60;
-        timerDisplay = "Time: " + to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + to_string(seconds);
+        statusDisplay = "Time: " + to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + to_string(seconds);
         glColor3f(0.0, 0.0, 0.0);
     }
     glRasterPos2i(10, 30); // Center the text horizontally
-    for (char c : timerDisplay) {
+    
+    for (char c : statusDisplay) 
+    {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
     }
 
     // Display reset button
     string resetDisplay = "Reset";
     glRasterPos2i(WINDOW_WIDTH / 2 - 20, 30);
-    for (char c : resetDisplay) {
+    
+    for (char c : resetDisplay) 
+    {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
     }
 
     // Display flags remaining
     string flagDisplay = "Flags: " + to_string(minesRemaining);
     glRasterPos2i(WINDOW_WIDTH - 120, 30);
-    for (char c : flagDisplay) {
+    
+    for (char c : flagDisplay) 
+    {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
     }
 
@@ -202,7 +264,8 @@ void display() {
     glutPostRedisplay();
 }
 
-void resetGame() {
+void resetGame() 
+{
     // Reset game variables
     minesRemaining = 10;
     startTime = time(nullptr);
@@ -214,7 +277,8 @@ void resetGame() {
     gameOverFlag = false; // Reset game over flag
 }
 
-void gameOver() {
+void gameOver() 
+{
     time_t currentTime = time(nullptr);
     int elapsedTime = difftime(currentTime, startTime);
     int minutes = elapsedTime / 60;
@@ -224,52 +288,68 @@ void gameOver() {
     gameOverFlag = true; // Set game over flag
 
     // Reveal all the mines
-    for (int y = 0; y < BOARD_SIZE; ++y) {
-        for (int x = 0; x < BOARD_SIZE; ++x) {
-            if (cellContent[y][x] == MINE) {
+    for (int y = 0; y < BOARD_SIZE; ++y) 
+    {
+        for (int x = 0; x < BOARD_SIZE; ++x) 
+	{
+            if (cellContent[y][x] == MINE) 
+	    {
                 cellState[y][x] = REVEALED;
             }
         }
     }
 }
 
-void mouse(int button, int state, int x, int y) {
+void mouse(int button, int state, int x, int y) 
+{
 
-    if (gameOverFlag) {
-        if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-            if (x >= WINDOW_WIDTH / 2 - 20 && x <= WINDOW_WIDTH / 2 + 20 && y >= 10 && y <= 30) {
-                resetGame(); // Reset game if reset button is clicked
-            }
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) 
+    {
+        if (x >= WINDOW_WIDTH / 2 - 20 && x <= WINDOW_WIDTH / 2 + 20 && y >= 10 && y <= 30) 
+        {
+            resetGame(); // Reset game if reset button is clicked
         }
-        return;
     }
 
     if (x < 0 || y < GUI_HEIGHT || x >= WINDOW_WIDTH || y >= WINDOW_HEIGHT) return; // Click outside the game board area
     int cellX = x / CELL_SIZE;
     int cellY = (y - GUI_HEIGHT) / CELL_SIZE;
 
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-        if (cellState[cellY][cellX] == HIDDEN) {
-            if (cellContent[cellY][cellX] == MINE) {
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) 
+    {
+        if (cellState[cellY][cellX] == HIDDEN) 
+	{
+            if (cellContent[cellY][cellX] == MINE) 
+	    {
                 gameOver();
-            } else {
+            } 
+	    else 
+	    {
                 revealEmptyCells(cellX, cellY);
             }
         }
-    } else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-        if (cellState[cellY][cellX] == HIDDEN) {
-            if (minesRemaining > 0) {
+    } 
+    
+    else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) 
+    {
+        if (cellState[cellY][cellX] == HIDDEN) 
+	{
+            if (minesRemaining > 0) 
+	    {
                 cellState[cellY][cellX] = MARKED;
                 minesRemaining--;
             }
-        } else if (cellState[cellY][cellX] == MARKED) {
+        } 
+	else if (cellState[cellY][cellX] == MARKED) 
+	{
             cellState[cellY][cellX] = HIDDEN;
             minesRemaining++;
         }
     }
 }
 
-void reshape(int w, int h) {
+void reshape(int w, int h) 
+{
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -286,10 +366,24 @@ void keyboard(unsigned char key, int x, int y)
         //closes program
         case 27: //escape key
             exit(-1);
+	//reveal all mines (developer keybind)
+        case 'm':
+        case 'M':
+            if (!gameOverFlag) {
+                for (int y = 0; y < BOARD_SIZE; ++y) {
+                    for (int x = 0; x < BOARD_SIZE; ++x) {
+                        if (cellContent[y][x] == MINE) {
+                            cellState[y][x] = REVEALED;
+                        }
+                    }
+                }
+            }
+            break;
     }
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
