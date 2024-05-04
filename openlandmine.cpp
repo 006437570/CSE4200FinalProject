@@ -19,8 +19,8 @@ int MINES_COUNT = 10; // Initial number of miens on the game board
 
 // Variables for color themes
 float hiddenGrid[3] = {0.5, 0.5, 0.5};    // Grids that haven't been revealed yet (default gray)
-float markedGrid[3] = {1.0, 0.0, 0.0};    // Grid that has been flagged by player (default red)
-float bombGrid[3] = {0.0, 0.0, 0.0};      // Grid that has a bomb on it (default black)
+float markedGrid[3] = {0.0, 1.0, 0.0};    // Grid that has been flagged by player (default green)
+float bombGrid[3] = {1.0, 0.0, 0.0};      // Grid that has a bomb on it (default red)
 float revealedGrid[3] = {0.8, 0.8, 0.8};  // Grid that has been revealed by the player (default light gray)
 float gridBorder[3] = {1.0, 1.0, 1.0};    // Outline color of all the grids (default white)
 
@@ -47,6 +47,48 @@ time_t startTime;
 bool gameOverFlag = false;
 bool winConditionMet = false;
 bool gameState = false;
+
+void drawFlag(GLfloat x, GLfloat y)
+{
+    //Flagpole
+    glColor3f(0.4f, 0.2f, 0.0f);
+    glBegin(GL_POLYGON);
+        glVertex2f(x+5, y+5);
+        glVertex2f(x+5, y+CELL_SIZE-5);
+        glVertex2f(x+15, y+CELL_SIZE-5);
+        glVertex2f(x+15, y+5);
+    glEnd();
+
+    //Flag
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glBegin(GL_POLYGON);
+        glVertex2f(x+15, y+5);
+        glVertex2f(x+15, y+20);
+        glVertex2f(x+45, y+20);
+        glVertex2f(x+45, y+5);
+    glEnd();
+
+    //Outline of flag
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glLineWidth(2.0f);
+    glBegin(GL_LINE_LOOP);
+        glVertex2f(x+15, y+5);
+        glVertex2f(x+15, y+20);
+        glVertex2f(x+45, y+20);
+        glVertex2f(x+45, y+5);
+    glEnd();
+}
+
+void drawMine(GLfloat x, GLfloat y)
+{
+    glColor3f(0.0f,0.0f,0.0f);
+    glBegin(GL_POLYGON);
+        glVertex2f(x+15,y+CELL_SIZE-5);
+        glVertex2f(x+15,y+CELL_SIZE-10);
+        glVertex2f(x+CELL_SIZE-15,y+CELL_SIZE-10);
+        glVertex2f(x+CELL_SIZE-15,y+CELL_SIZE-5);
+    glEnd();
+}
 
 // Function to generate mines
 void generateMines(int numMines) {
@@ -121,8 +163,8 @@ void drawCell(int x, int y) {
 // Function to draw the game board
 void drawBoard() {
     // Draw the grid lines
-    glColor3f(0.0, 0.0, 0.0); // Set line color to black
-    glLineWidth(2.0);          // Set line width to 2 pixels
+    glColor3f(0.0, 0.0, 0.0);   // Set line color to black
+    glLineWidth(2.0);           // Set line width to 2 pixels
 
     glBegin(GL_LINES);
     for (int i = 0; i < (BOARD_SIZE + 1); ++i) {
@@ -149,6 +191,17 @@ void drawBoard() {
                 }
             }
             drawCell(x * CELL_SIZE, GUI_HEIGHT + y * CELL_SIZE);
+
+            //if cell has been marked, draw flag on it
+            if (cellState[y][x] == MARKED)
+            {
+                drawFlag(x * CELL_SIZE, GUI_HEIGHT + y * CELL_SIZE);
+            }
+            //if cell has a mine, then draw a mine on it
+            else if (cellState[y][x] == MINE && cellState[y][x] == REVEALED)
+            {
+                drawMine(x * CELL_SIZE, GUI_HEIGHT + y * CELL_SIZE);
+            }
 
             if (cellState[y][x] == REVEALED && cellContent[y][x] != MINE &&
                 adjacentMines[y][x] > 0) {
