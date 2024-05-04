@@ -314,7 +314,7 @@ void keyboard(unsigned char key, int x, int y) {
             resetGame();
         }
         break;
-    
+    // Decrease mine count 
     case 'u':
     case 'U':
         if (MINES_COUNT > 1) {
@@ -322,6 +322,7 @@ void keyboard(unsigned char key, int x, int y) {
 	    resetGame();
 	}
 	break;
+    // Increase mine count
     case 'i':
     case 'I':
 	if (MINES_COUNT < BOARD_SIZE * BOARD_SIZE - 1) {
