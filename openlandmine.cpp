@@ -44,6 +44,7 @@ time_t startTime;
 // Flags indicating whether the game is over or if the win condition is met
 bool gameOverFlag = false;
 bool winConditionMet = false;
+bool gameState = false;
 
 // Function to generate mines
 void generateMines(int numMines) {
@@ -206,7 +207,7 @@ void display() {
         glColor3f(1.0, 0.0, 0.0); // Red color for game over message
     } else if (winConditionMet) {
         statusDisplay = "Winner!";
-        glColor3f(0.0, 1.0, 0.0); // Green color for winner message
+	glColor3f(0.0, 1.0, 0.0); // Green color for winner message
     } else {
         // Display game timer if the timer is running
         time_t currentTime = time(nullptr);
@@ -244,6 +245,7 @@ void display() {
 // Function to reset the game
 void resetGame() {
     gameOverFlag = false;
+    gameState = false;
     cellState.assign(BOARD_SIZE, vector<int>(BOARD_SIZE, HIDDEN));
     cellContent.assign(BOARD_SIZE, vector<int>(BOARD_SIZE, EMPTY));
     adjacentMines.assign(BOARD_SIZE, vector<int>(BOARD_SIZE, 0));
@@ -336,7 +338,16 @@ void mouse(int button, int state, int x, int y) {
     int cellX = x / CELL_SIZE;
     int cellY = (y - GUI_HEIGHT) / CELL_SIZE;
 
-    if (!gameOverFlag) {
+    if (gameOverFlag)
+    {
+        gameState = true;
+    }
+    if (winConditionMet)
+    {
+	gameState = true;
+    }
+
+    if (gameState == false) {
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
             if (cellState[cellY][cellX] == HIDDEN) {
                 if (cellContent[cellY][cellX] == MINE) {
