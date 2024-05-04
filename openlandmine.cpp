@@ -5,6 +5,8 @@
 #include <iomanip>
 #include <GL/glut.h>
 
+#include "themes.h"
+
 using namespace std;
 
 // Width and Height of game window
@@ -18,11 +20,12 @@ int CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE; // Size of each cell on the game boar
 int MINES_COUNT = 10; // Initial number of miens on the game board
 
 // Variables for color themes
-float hiddenGrid[3] = {0.5, 0.5, 0.5};    // Grids that haven't been revealed yet (default gray)
-float markedGrid[3] = {0.0, 1.0, 0.0};    // Grid that has been flagged by player (default green)
-float bombGrid[3] = {1.0, 0.0, 0.0};      // Grid that has a bomb on it (default red)
-float revealedGrid[3] = {0.8, 0.8, 0.8};  // Grid that has been revealed by the player (default light gray)
-float gridBorder[3] = {1.0, 1.0, 1.0};    // Outline color of all the grids (default white)
+//float hiddenGrid[3] = {0.5, 0.5, 0.5};    // Grids that haven't been revealed yet (default gray)
+//float markedGrid[3] = {0.0, 1.0, 0.0};    // Grid that has been flagged by player (default green)
+//float bombGrid[3] = {1.0, 0.0, 0.0};      // Grid that has a bomb on it (default red)
+//float revealedGrid[3] = {0.8, 0.8, 0.8};  // Grid that has been revealed by the player (default light gray)
+//float gridBorder[3] = {1.0, 1.0, 1.0};    // Outline color of all the grids (default white)
+ThemeColors currentTheme = themeDefault;
 
 // Cell states
 const int HIDDEN = 0; // Cell is hidden
@@ -180,14 +183,14 @@ void drawBoard() {
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
             if (cellState[y][x] == HIDDEN) {
-                glColor3fv(hiddenGrid); // Gray
+                glColor3fv(currentTheme.hiddenGrid); // Gray
             } else if (cellState[y][x] == MARKED) {
-                glColor3fv(markedGrid); // Red
+                glColor3fv(currentTheme.markedGrid); // Red
             } else {
                 if (cellContent[y][x] == MINE) {
-                    glColor3fv(bombGrid); // Black
+                    glColor3fv(currentTheme.bombGrid); // Black
                 } else {
-                    glColor3fv(revealedGrid); // Light gray
+                    glColor3fv(currentTheme.revealedGrid); // Light gray
                 }
             }
             drawCell(x * CELL_SIZE, GUI_HEIGHT + y * CELL_SIZE);
@@ -217,7 +220,7 @@ void drawBoard() {
         }
     }
     // Draw the grid lines
-    glColor3f(gridBorder[0], gridBorder[1], gridBorder[2]);
+    glColor3f(currentTheme.gridBorder[0], currentTheme.gridBorder[1], currentTheme.gridBorder[2]);
     glLineWidth(2.0); // Set line width to 1 pixel
 
     glBegin(GL_LINES);
@@ -232,11 +235,32 @@ void drawBoard() {
     glEnd();
 }
 
+void drawThemeButton() {
+    // Draw a button rectangle
+    glColor3f(0.5, 0.5, 0.5); // Gray color
+    glBegin(GL_QUADS);
+    glVertex2i(WINDOW_WIDTH / 2 - 40, 40); // Top-left
+    glVertex2i(WINDOW_WIDTH / 2 + 40, 40); // Top-right
+    glVertex2i(WINDOW_WIDTH / 2 + 40, 70); // Bottom-right
+    glVertex2i(WINDOW_WIDTH / 2 - 40, 70); // Bottom-left
+    glEnd();
+
+    // Draw button label
+    glColor3f(1.0, 1.0, 1.0); // White color
+    glRasterPos2i(WINDOW_WIDTH / 2 - 20, 60); // Position the text
+
+    // Display "Theme" text
+    string themeDisplay = "Theme";
+    for (char c : themeDisplay) {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, c);
+    }
+}
+
 // Function to display the game
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     drawBoard();
-
+    drawThemeButton();
 
     // Check win condition
     winConditionMet = true;
@@ -397,12 +421,37 @@ void reshape(int w, int h) {
     glLoadIdentity();
 }
 
+// Function to cycle through themes
+void cycleThemes() {
+    static int themeIndex = 0;
+    themeIndex = (themeIndex + 1) % 3; // Update theme index cyclically
+    switch (themeIndex) {
+        case 0:
+            currentTheme = themeDefault;
+            break;
+        case 1:
+            currentTheme = theme1;
+            break;
+        case 2:
+            currentTheme = theme2;
+            break;
+    }
+    // Redraw the board with the new theme
+    glutPostRedisplay();
+}
+
 // Function to handle mouse events
 void mouse(int button, int state, int x, int y) {
 
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
         if (x >= WINDOW_WIDTH / 2 - 20 && x <= WINDOW_WIDTH / 2 + 20 && y >= 10 && y <= 30) {
             resetGame(); // Reset game if reset button is clicked
+        }
+        
+	// Check if the click is within the theme button area
+        if (x >= WINDOW_WIDTH / 2 - 40 && x <= WINDOW_WIDTH / 2 + 40 &&
+            y >= 40 && y <= 70) {
+            cycleThemes(); // Cycle through themes
         }
     }
 
