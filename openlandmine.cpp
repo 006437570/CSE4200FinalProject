@@ -197,8 +197,9 @@ void drawBoard() {
             {
                 drawFlag(x * CELL_SIZE, GUI_HEIGHT + y * CELL_SIZE);
             }
-            //if cell has a mine, then draw a mine on it
-            else if (cellState[y][x] == MINE && cellState[y][x] == REVEALED)
+            
+	    //if cell has a mine, then draw a mine on it
+            if (cellState[y][x] == MINE && cellContent[y][x] == REVEALED)
             {
                 drawMine(x * CELL_SIZE, GUI_HEIGHT + y * CELL_SIZE);
             }
