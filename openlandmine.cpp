@@ -12,6 +12,8 @@ const int WINDOW_WIDTH = 600;
 const int WINDOW_HEIGHT = 750;
 const int GUI_HEIGHT = WINDOW_HEIGHT - WINDOW_WIDTH; // set height that will be for the GUI
 int BOARD_SIZE = 10; // Initial size of the game board
+int MAX_BOARD_SIZE = 20;
+int MIN_BOARD_SIZE = 8;
 int CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE; // Size of each cell on the game board
 int MINES_COUNT = 10; // Initial number of miens on the game board
 
@@ -296,7 +298,7 @@ void keyboard(unsigned char key, int x, int y) {
         break;
     // Increase difficulty
     case '+':
-	if (MINES_COUNT < 35) {
+	if (BOARD_SIZE < MAX_BOARD_SIZE) {
             MINES_COUNT += 5;
             BOARD_SIZE += 2;
             CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE;
@@ -305,13 +307,28 @@ void keyboard(unsigned char key, int x, int y) {
         break;
     // Decrease difficulty
     case '-':
-        if (MINES_COUNT > 5) {
+        if (BOARD_SIZE > MIN_BOARD_SIZE) {
             MINES_COUNT -= 5;
             BOARD_SIZE -= 2;
             CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE;
             resetGame();
         }
         break;
+    
+    case 'u':
+    case 'U':
+        if (MINES_COUNT > 1) {
+	    MINES_COUNT--;
+	    resetGame();
+	}
+	break;
+    case 'i':
+    case 'I':
+	if (MINES_COUNT < BOARD_SIZE * BOARD_SIZE - 1) {
+	    MINES_COUNT++;
+	    resetGame();
+	}
+	break;
     }
 }
 
@@ -338,15 +355,15 @@ void mouse(int button, int state, int x, int y) {
     int cellX = x / CELL_SIZE;
     int cellY = (y - GUI_HEIGHT) / CELL_SIZE;
 
-    if (gameOverFlag)
-    {
+    // Handle gameState
+    if (gameOverFlag) {
         gameState = true;
     }
-    if (winConditionMet)
-    {
+    if (winConditionMet) {
 	gameState = true;
     }
 
+    // When a game state is reached then disable input on the grid
     if (gameState == false) {
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
             if (cellState[cellY][cellX] == HIDDEN) {
