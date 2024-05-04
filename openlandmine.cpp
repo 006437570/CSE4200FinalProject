@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+#include <cmath>
 #include <iomanip>
 #include <GL/glut.h>
 
@@ -148,10 +149,14 @@ void drawBoard() {
 
             if (cellState[y][x] == REVEALED && cellContent[y][x] != MINE &&
                 adjacentMines[y][x] > 0) {
+	        // Adjust font size based on cell size and number of digits
+                int numDigits = (adjacentMines[y][x] == 0) ? 1 : (int)log10(adjacentMines[y][x]) + 1;
+                int fontSize = CELL_SIZE / (2 * numDigits); // Adjust this factor as needed
                 glColor3f(0.0, 0.0, 0.0); // Black
-                glRasterPos2i(x * CELL_SIZE + CELL_SIZE / 3, GUI_HEIGHT + y * CELL_SIZE + CELL_SIZE / 1.5);
+                glRasterPos2i(x * CELL_SIZE + CELL_SIZE / 3, GUI_HEIGHT + y * CELL_SIZE + CELL_SIZE / 2 + fontSize / 2);
+                // Draw number with adjusted font size
                 glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, '0' + adjacentMines[y][x]);
-            }
+	    }
         }
     }
     // Draw the grid lines
@@ -289,10 +294,12 @@ void keyboard(unsigned char key, int x, int y) {
         break;
     // Increase difficulty
     case '+':
-        MINES_COUNT += 5;
-        BOARD_SIZE += 2;
-        CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE;
-        resetGame();
+	if (MINES_COUNT < 35) {
+            MINES_COUNT += 5;
+            BOARD_SIZE += 2;
+            CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE;
+            resetGame();	
+	}
         break;
     // Decrease difficulty
     case '-':
@@ -329,24 +336,26 @@ void mouse(int button, int state, int x, int y) {
     int cellX = x / CELL_SIZE;
     int cellY = (y - GUI_HEIGHT) / CELL_SIZE;
 
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-        if (cellState[cellY][cellX] == HIDDEN) {
-            if (cellContent[cellY][cellX] == MINE) {
-                gameOver();
-            } else {
-                revealEmptyCells(cellX, cellY);
-            }
-         }
-    } else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-        if (cellState[cellY][cellX] == HIDDEN) {
-            if (minesRemaining > 0) {
-                cellState[cellY][cellX] = MARKED;
-                minesRemaining--;
-            }
-         } else if (cellState[cellY][cellX] == MARKED) {
-             cellState[cellY][cellX] = HIDDEN;
-             minesRemaining++;
-         }
+    if (!gameOverFlag) {
+        if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+            if (cellState[cellY][cellX] == HIDDEN) {
+                if (cellContent[cellY][cellX] == MINE) {
+                    gameOver();
+                } else {
+                    revealEmptyCells(cellX, cellY);
+                }
+             }
+        } else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+            if (cellState[cellY][cellX] == HIDDEN) {
+                if (minesRemaining > 0) {
+                    cellState[cellY][cellX] = MARKED;
+                    minesRemaining--;
+                }
+             } else if (cellState[cellY][cellX] == MARKED) {
+                 cellState[cellY][cellX] = HIDDEN;
+                 minesRemaining++;
+             }
+        }
     }
 }
 
