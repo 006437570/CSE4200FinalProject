@@ -47,6 +47,7 @@ bool gameOverFlag = false;
 bool winConditionMet = false;
 bool gameState = false;
 
+// Draw flag icon
 void drawFlag(GLfloat x, GLfloat y)
 {
     // Flagpole
@@ -78,14 +79,45 @@ void drawFlag(GLfloat x, GLfloat y)
     glEnd();
 }
 
+// Draw mine icon
 void drawMine(GLfloat x, GLfloat y)
 {
-    glColor3f(0.0f,0.0f,0.0f);
+    // Bottom of line
+    glColor3f(0.2f,0.2f,0.2f);
     glBegin(GL_POLYGON);
-        glVertex2f(x+15,y+CELL_SIZE-5);
-        glVertex2f(x+15,y+CELL_SIZE-10);
-        glVertex2f(x+CELL_SIZE-15,y+CELL_SIZE-10);
-        glVertex2f(x+CELL_SIZE-15,y+CELL_SIZE-5);
+        glVertex2f(x+10,y+CELL_SIZE-20);
+        glVertex2f(x+10,y+CELL_SIZE-25);
+        glVertex2f(x+CELL_SIZE-10,y+CELL_SIZE-25);
+        glVertex2f(x+CELL_SIZE-10,y+CELL_SIZE-20);
+    glEnd();
+
+    // Outline of mine
+    glColor3f(0.0f,0.0f,0.0f);
+    glLineWidth(2.0f);
+    glBegin(GL_LINE_LOOP);
+        glVertex2f(x+10,y+CELL_SIZE-20);
+        glVertex2f(x+10,y+CELL_SIZE-25);
+        glVertex2f(x+CELL_SIZE-10,y+CELL_SIZE-25);
+        glVertex2f(x+CELL_SIZE-10,y+CELL_SIZE-20);
+    glEnd();
+
+    // Red button of mine
+    glColor3f(1.0f,0.0f,0.0f);
+    glBegin(GL_POLYGON);
+        glVertex2f(x+20,y+CELL_SIZE-30);
+        glVertex2f(x+20,y+CELL_SIZE-25);
+        glVertex2f(x+CELL_SIZE-20,y+CELL_SIZE-25);
+        glVertex2f(x+CELL_SIZE-20,y+CELL_SIZE-30);
+    glEnd();
+
+    // Outline of button
+    glColor3f(0.0f,0.0f,0.0f);
+    glLineWidth(2.0f);
+    glBegin(GL_LINE_LOOP);
+        glVertex2f(x+20,y+CELL_SIZE-30);
+        glVertex2f(x+20,y+CELL_SIZE-25);
+        glVertex2f(x+CELL_SIZE-20,y+CELL_SIZE-25);
+        glVertex2f(x+CELL_SIZE-20,y+CELL_SIZE-30);
     glEnd();
 }
 
@@ -275,7 +307,6 @@ void display() {
             break;
         }
     }
-
     // Display game status
     string statusDisplay;
     if (gameOverFlag) {
