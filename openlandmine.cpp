@@ -19,12 +19,7 @@ int MIN_BOARD_SIZE = 8;
 int CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE; // Size of each cell on the game board
 int MINES_COUNT = 10; // Initial number of mines on the game board
 
-// Variables for color themes
-//float hiddenGrid[3] = {0.5, 0.5, 0.5};    // Grids that haven't been revealed yet (default gray)
-//float markedGrid[3] = {0.0, 1.0, 0.0};    // Grid that has been flagged by player (default green)
-//float bombGrid[3] = {1.0, 0.0, 0.0};      // Grid that has a bomb on it (default red)
-//float revealedGrid[3] = {0.8, 0.8, 0.8};  // Grid that has been revealed by the player (default light gray)
-//float gridBorder[3] = {1.0, 1.0, 1.0};    // Outline color of all the grids (default white)
+// Color themes using themes.h file
 ThemeColors currentTheme = themeDefault;
 
 // Cell states
@@ -36,6 +31,7 @@ const int MARKED = 2; // Cell is marked by a player
 const int EMPTY = 0; // Cell is empty
 const int MINE = 1; // Cell contains a mine
 
+// Vectors to handle the board
 vector<vector<int>> cellState(BOARD_SIZE, vector<int>(BOARD_SIZE, HIDDEN));
 vector<vector<int>> cellContent(BOARD_SIZE, vector<int>(BOARD_SIZE, EMPTY));
 vector<vector<int>> adjacentMines(BOARD_SIZE, vector<int>(BOARD_SIZE, 0));
@@ -53,7 +49,7 @@ bool gameState = false;
 
 void drawFlag(GLfloat x, GLfloat y)
 {
-    //Flagpole
+    // Flagpole
     glColor3f(0.4f, 0.2f, 0.0f);
     glBegin(GL_POLYGON);
         glVertex2f(x+5, y+5);
@@ -62,7 +58,7 @@ void drawFlag(GLfloat x, GLfloat y)
         glVertex2f(x+15, y+5);
     glEnd();
 
-    //Flag
+    // Flag
     glColor3f(1.0f, 1.0f, 1.0f);
     glBegin(GL_POLYGON);
         glVertex2f(x+15, y+5);
@@ -71,7 +67,7 @@ void drawFlag(GLfloat x, GLfloat y)
         glVertex2f(x+45, y+5);
     glEnd();
 
-    //Outline of flag
+    // Outline of flag
     glColor3f(0.0f, 0.0f, 0.0f);
     glLineWidth(2.0f);
     glBegin(GL_LINE_LOOP);
