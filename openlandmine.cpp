@@ -17,7 +17,7 @@ int BOARD_SIZE = 10; // Initial size of the game board
 int MAX_BOARD_SIZE = 20;
 int MIN_BOARD_SIZE = 8;
 int CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE; // Size of each cell on the game board
-int MINES_COUNT = 10; // Initial number of miens on the game board
+int MINES_COUNT = 10; // Initial number of mines on the game board
 
 // Variables for color themes
 //float hiddenGrid[3] = {0.5, 0.5, 0.5};    // Grids that haven't been revealed yet (default gray)
@@ -355,6 +355,23 @@ void gameOver() {
     }
 }
 
+void instructions() {
+    // Print instructions in the terminal chat
+    cout << "=======================OPEN-LANDMINE===========================" << endl;
+    cout << "Welcome to the Open-Landmine project, hope you enjoy" << endl;
+    cout << "Instructions:" << endl;
+    cout << "1. Left-click to reveal a cell." << endl;
+    cout << "2. Right-click to flag a potential mine." << endl;
+    cout << "3. If a cell shows a number, it's the number of adjacent mines." << endl;
+    cout << "4. Revealing a mine ends the game." << endl;
+    cout << "5. Flag all mines and reveal all other cells to win." << endl;
+    cout << "6. Use '+'/'-' to adjust difficulty (increase/decrease mines)." << endl;
+    cout << "7. Use 'u'/'i' to manually decrease/increase mines." << endl;
+    cout << "8. Press 'M' or 'm' to reveal all mines (developer key)." << endl;
+    cout << "9. Press 'Escape' to exit the game." << endl;
+    cout << "10. Press 'P' or 'p' to display these instructions again" << endl;
+}
+
 // Function to handle keyboard events
 void keyboard(unsigned char key, int x, int y) {
     switch (key) {
@@ -415,6 +432,10 @@ void keyboard(unsigned char key, int x, int y) {
 	    MINES_COUNT++;
 	    resetGame();
 	}
+	break;
+    case 'p':
+    case 'P':
+        instructions();
 	break;
     }
 }
@@ -505,6 +526,7 @@ int main(int argc, char **argv) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); // Set display mode
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT); // Set window size
     glutCreateWindow("Open-Landmine");
+    instructions(); // Print instructions in the terminal chat
     init(); // Initialize the game
     glutDisplayFunc(display); // Register display callback function
     glutMouseFunc(mouse); // Register mouse callback function
