@@ -304,7 +304,7 @@ void display() {
 
     // Display reset button
     string resetDisplay = "Reset";
-    glRasterPos2i(WINDOW_WIDTH / 2 - 20, 30);
+    glRasterPos2i(WINDOW_WIDTH / 2 - 28, 30);
     for (char c : resetDisplay) {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
     }
@@ -377,8 +377,12 @@ void keyboard(unsigned char key, int x, int y) {
     // Increase difficulty
     case '+':
 	if (BOARD_SIZE < MAX_BOARD_SIZE) {
-            MINES_COUNT += 5;
             BOARD_SIZE += 2;
+	    if (MINES_COUNT > BOARD_SIZE * BOARD_SIZE) {
+	        MINES_COUNT = BOARD_SIZE * BOARD_SIZE - 1;
+	    } else {
+	        MINES_COUNT += 5;
+	    }
             CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE;
             resetGame();	
 	}
@@ -386,8 +390,12 @@ void keyboard(unsigned char key, int x, int y) {
     // Decrease difficulty
     case '-':
         if (BOARD_SIZE > MIN_BOARD_SIZE) {
-            MINES_COUNT -= 5;
             BOARD_SIZE -= 2;
+	    if (MINES_COUNT > BOARD_SIZE * BOARD_SIZE) {
+		MINES_COUNT = BOARD_SIZE * BOARD_SIZE - 1;
+	    } else {
+	        MINES_COUNT -= 5;
+	    }
             CELL_SIZE = WINDOW_WIDTH / BOARD_SIZE;
             resetGame();
         }
